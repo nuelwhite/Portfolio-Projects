@@ -211,10 +211,25 @@ WHERE time_in_queue != 0
 -- C. What is the average queue time on different days?
 SELECT DAYNAME(time_in_queue) AS `Day`, ROUND(AVG(time_in_queue)) AS avg_time_in_queue
 FROM visits
-WHERE DAYNAME(time_in_queue) IS NOT NULL  
+WHERE DAYNAME(time_in_queue) != 0
 GROUP BY DAYNAME(time_in_queue)
-ORDER BY 2 DESC
+ORDER BY 1 DESC
 ; 
+
+-- Let's look at what time during the day people queue for water
+SELECT HOUR(time_of_record) AS hour_of_day, ROUND(AVG(time_in_queue)) AS avg_time_in_queue
+FROM visits
+GROUP BY HOUR(time_of_record)
+ORDER BY 1
+;
+/*
+	The higher average time people spend in queues are during 19:00, but the numbers do not explain a lot. Fixing them in a proper time format can help with clarity.
+*/
+SELECT TIME_FORMAT(TIME(time_of_record), '%H:00') AS hour_of_day, ROUND(AVG(time_in_queue)) AS avg_time_in_queue
+FROM visits
+GROUP BY TIME_FORMAT(TIME(time_of_record))
+ORDER BY 1
+
 
 -- D. How can we communicate this information efficiently?
 
