@@ -194,7 +194,7 @@ FROM visits;
 -- A. How long did the survey take?
 SELECT MAX(time_of_record) AS end_date, MIN(time_of_record) AS start_date, datediff(MAX(time_of_record), MIN(time_of_record)) AS Number_of_Days
 FROM visits;
--- The survey lasted 924 days which is 2 and half years. They survey started 2021-01-01 to 2023-07-14.
+-- The survey lasted 924 days which is 2 and half years. They survey started 2021-01-01 at 9:10 and ended at 13:53 on 2023-07-14.
 
 
 -- B. What is the average total queue time for water?
@@ -205,16 +205,19 @@ ON v.source_id = w.source_id
 WHERE time_in_queue != 0
 -- w.type_of_water_source NOT IN ( "tap_in_home", "tap_in_home_broken")
 ;/*
-	with tap in homes, people do not need to queue to get water, thus the 0 time spent in queue. Adding the 0 during the arithmetic operation changes the average value. People spend about 123 minutes averagely in queue for water. Imagine spending that much time ina queue to get water. 
+	with tap in homes, people do not need to queue to get water, thus the 0 time spent in queue. Adding the 0 during the arithmetic operation changes the average value. People spend about 123 minutes averagely in queue for water. Imagine spending that much time in a queue to get water. 
 */
 
 -- C. What is the average queue time on different days?
 SELECT DAYNAME(time_in_queue) AS `Day`, ROUND(AVG(time_in_queue)) AS avg_time_in_queue
-FROM visits
-WHERE DAYNAME(time_in_queue) != 0
+FROM visits v
+JOIN water_source w
+WHERE DAYNAME(time_in_queue) != 0 
+AND w.type_of_water_source NOT IN ('tap_in_home', 'tap_in_home_broken')
 GROUP BY DAYNAME(time_in_queue)
 ORDER BY 1 DESC
 ; 
+
 
 -- Let's look at what time during the day people queue for water
 SELECT HOUR(time_of_record) AS hour_of_day, ROUND(AVG(time_in_queue)) AS avg_time_in_queue
@@ -228,7 +231,7 @@ ORDER BY 1
 SELECT TIME_FORMAT(TIME(time_of_record), '%H:00') AS hour_of_day, ROUND(AVG(time_in_queue)) AS avg_time_in_queue
 FROM visits
 GROUP BY TIME_FORMAT(TIME(time_of_record))
-ORDER BY 1
+ORDER BY 1;
 
 
 -- D. How can we communicate this information efficiently?
